@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pyproj4.github.io)",
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)",
+      "Bash(./build.sh:*)",
+      "Bash(phpize:*)",
+      "Bash(./configure:*)",
+      "Bash(make:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(php:*)",
+      "Bash(ls:*)",
+      "Bash(./debug-tests.sh:*)",
+      "Bash(pkg-config:*)",
+      "Bash(rg:*)",
+      "Bash(cat:*)",
+      "Bash(nm:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(./restore_test.sh:*)",
+      "Bash(./fix_duplicates.sh)",
+      "Bash(USE_ZEND_ALLOC=0 php -dextension=modules/proj.so tests/022-database-queries.phpt 2 >& 1)",
+      "Bash(projinfo:*)",
+      "Bash(geod:*)",
+      "Bash(ldd:*)",
+      "Bash(env)",
+      "Bash(valgrind:*)",
+      "WebFetch(domain:proj.org)",
+      "Bash(dpkg-parsechangelog:*)",
+      "Bash(dpkg:*)"
+    ],
+    "deny": []
+  }
+}

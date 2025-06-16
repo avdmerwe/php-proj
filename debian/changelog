@@ -1,0 +1,12 @@
+php-proj (2.0.0) jammy; urgency=medium
+
+  * Rewritten PHP PROJ extension to be more complete port of Pyproj
+  * Added comprehensive test suite and documentation
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Mon, 16 Jun 2025 19:43:35 +0200
+
+php-proj (1.0.0) jammy; urgency=medium
+
+  * Initial release of PHP PROJ extension
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Mon, 02 Jun 2025 22:45:50 +0200

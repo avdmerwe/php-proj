@@ -1,0 +1,73 @@
+php-proj for Debian
+====================
+
+This package provides PHP bindings for the PROJ cartographic projections library.
+
+Installation
+------------
+
+After installing this package, the extension will be automatically enabled for
+all PHP SAPIs (CLI, FPM, Apache, etc.) using the phpenmod mechanism.
+
+You can verify the extension is loaded with:
+    php -m | grep proj
+
+Configuration
+-------------
+
+The extension is configured via the standard PHP module configuration system.
+The configuration file is located at:
+    /etc/php/*/mods-available/proj.ini
+
+To manually enable/disable the extension:
+    phpenmod proj    # Enable
+    phpdismod proj   # Disable
+
+For specific SAPI or PHP version:
+    phpenmod -s cli proj           # Enable for CLI only
+    phpenmod -v 8.1 proj           # Enable for PHP 8.1 only
+    phpenmod -v 8.1 -s fpm proj    # Enable for PHP 8.1 FPM only
+
+Requirements
+------------
+
+This extension requires:
+- libproj22 (>= 6.0.0) - The PROJ cartographic projections library
+- PHP 7.4 or later
+
+Development
+-----------
+
+Development headers are provided in the php-proj-dev package, which includes:
+- Header files for extension development
+- Documentation for the C API
+
+Troubleshooting
+--------------
+
+If the extension fails to load, check:
+
+1. PHP error logs for specific error messages
+2. Ensure libproj is properly installed:
+    dpkg -l libproj22
+
+3. Verify the extension file exists:
+    find /usr/lib/php -name "proj.so"
+
+4. Check PHP module configuration:
+    php --ini | grep proj
+
+5. Test with a simple script:
+    php -r "var_dump(extension_loaded('proj'));"
+
+For more information, see:
+- PROJ library documentation: https://proj.org/
+- Extension source code and examples in /usr/share/doc/php-proj/
+
+Bug Reports
+-----------
+
+Please report bugs to the package maintainer or upstream project.
+Include PHP version, PROJ version, and a minimal reproduction case.
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Mon, 02 Jun 2025 22:45:50 +0200

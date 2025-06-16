@@ -1,0 +1,962 @@
+.TH PHP-PROJ 7 "2024-06-07" "php-proj 2.0.0" "PHP Extensions"
+.SH NAME
+php-proj \- PHP bindings for PROJ cartographic projections library
+.SH SYNOPSIS
+.nf
+.B <?php
+.B declare(strict_types=1);
+.B 
+.B // Global functions
+.B proj_get_authorities(): array
+.B proj_get_codes(string $auth_name, ?string $pj_type = null, bool $allow_deprecated = false): array
+.B proj_get_crs_info_list_from_database(?string $auth_name = null, ...): array
+.B proj_is_network_enabled(): bool
+.B proj_set_network_enabled(bool $enabled = true): void
+.B proj_get_user_data_dir(bool $create = false): ?string
+.B proj_set_user_data_dir(?string $path = null): void
+.B 
+.B // Main classes
+.B class ProjCRS { /* CRS creation and properties */ }
+.B class ProjTransformer { /* Coordinate transformations */ }
+.B class ProjGeod { /* Geodetic calculations */ }
+.B class ProjTransformerGroup { /* Transformation groups */ }
+.B 
+.B // Object Model classes
+.B class ProjCoordinateSystem { /* Coordinate system objects */ }
+.B class ProjAxis { /* Individual coordinate axis properties */ }
+.B class ProjDatum { /* Geodetic reference frame objects */ }
+.B class ProjEllipsoid { /* Ellipsoid parameter objects */ }
+.B class ProjPrimeMeridian { /* Prime meridian objects */ }
+.B class ProjCoordinateOperation { /* Coordinate transformation operations */ }
+.B class ProjAreaOfUse { /* Area of use boundaries */ }
+.B ?>
+.fi
+.SH DESCRIPTION
+The
+.B php-proj
+extension provides comprehensive PHP bindings for the PROJ cartographic projections library. It enables coordinate transformations, geodetic calculations, and coordinate reference system (CRS) management in PHP applications.
+
+The extension follows standard PHP extension naming conventions with classes in the global namespace using the
+.I Proj
+prefix and global functions using the
+.I proj_
+prefix.
+
+.SH CORE CLASSES
+.SS ProjCRS
+Coordinate Reference System creation, properties, and conversions.
+
+.B Constructor:
+.RS
+.TP
+.B __construct($crs)
+Create CRS from PROJ parameters (supports string, int, array, or ProjCRS input)
+.RE
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjCRS::fromEpsg(int $epsg_code): self
+Create CRS from EPSG code
+.TP
+.B ProjCRS::fromString(string $crs_string): self
+Create CRS from any supported string format (WKT, PROJ4, URN, etc.)
+.TP
+.B ProjCRS::fromWkt(string $wkt): self
+Create CRS from WKT string
+.TP
+.B ProjCRS::fromProj4(string $proj4): self
+Create CRS from PROJ4 string
+.TP
+.B ProjCRS::fromJson(string $json): self
+Create CRS from JSON string
+.TP
+.B ProjCRS::fromAuthority(string $authority, int $code): self
+Create CRS from authority and code
+.TP
+.B ProjCRS::fromUserInput(mixed $value): self
+Create CRS from flexible user input
+.RE
+
+.B Information Methods:
+.RS
+.TP
+.B getName(): ?string
+Get CRS name
+.TP
+.B getTypeName(): ?string
+Get CRS type description
+.TP
+.B getAxisInfo(): ?array
+Get axis information as array of ProjAxis objects
+.TP
+.B getAreaOfUse(): ?ProjAreaOfUse
+Get area of use object with geographic bounds and name
+.TP
+.B getToEpsg(): ?int
+Get EPSG code if available
+.TP
+.B getCoordinateSystem(): ?ProjCoordinateSystem
+Get coordinate system object
+.TP
+.B getDatum(): ?ProjDatum
+Get datum object
+.TP
+.B getEllipsoid(): ?ProjEllipsoid
+Get ellipsoid object
+.TP
+.B getPrimeMeridian(): ?ProjPrimeMeridian
+Get prime meridian object
+.TP
+.B getCoordinateOperation(): ?ProjCoordinateOperation
+Get coordinate operation object (for projected CRS)
+.TP
+.B isGeographic(): bool
+Check if CRS is geographic
+.TP
+.B isProjected(): bool
+Check if CRS is projected
+.TP
+.B isGeocentric(): bool
+Check if CRS is geocentric
+.TP
+.B isCompound(): bool
+Check if CRS is compound
+.TP
+.B isEngineering(): bool
+Check if CRS is engineering
+.TP
+.B isVertical(): bool
+Check if CRS is vertical
+.TP
+.B isBound(): bool
+Check if CRS is bound
+.TP
+.B isDerived(): bool
+Check if CRS is derived
+.TP
+.B getGeodeticCrs(): ?ProjCRS
+Get geodetic CRS
+.TP
+.B getSourceCrs(): ?ProjCRS
+Get source CRS (for bound CRS)
+.TP
+.B getTargetCrs(): ?ProjCRS
+Get target CRS (for bound CRS)
+.TP
+.B getSubCrsList(): array
+Get sub-CRS list (for compound CRS)
+.TP
+.B getRemarks(): ?string
+Get remarks
+.TP
+.B getScope(): ?string
+Get scope
+.TP
+.B getToAuthority(): ?array
+Get authority information as array
+.RE
+
+.B Conversion Methods:
+.RS
+.TP
+.B toWkt(string $version = ProjWktVersion::WKT2_2019, bool $pretty = false): ?string
+Convert to WKT string
+.TP
+.B toProj4(string $version = ProjVersion::PROJ_5): ?string
+Convert to PROJ4 string
+.TP
+.B toJson(bool $pretty = false): string
+Convert to JSON string
+.TP
+.B equals(ProjCRS $other, bool $ignore_axis_order = false): bool
+Compare with another CRS
+.TP
+.B isExactSame(ProjCRS $other): bool
+Check if exactly the same as another CRS
+.TP
+.B getFactors(float $longitude, float $latitude): ?ProjFactors
+Calculate projection factors at a point
+.RE
+
+.SS ProjTransformer
+Coordinate transformations with full pipeline support.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjTransformer::fromCrs($crs_from, $crs_to, bool $always_xy = false, ...): self
+Create transformer between two CRSs with optional area of interest, authority, and accuracy constraints
+.TP
+.B ProjTransformer::fromPipeline(string $pipeline): self
+Create transformer from PROJ pipeline string
+.RE
+
+.B Transformation Methods:
+.RS
+.TP
+.B transform($xx, $yy, $zz = null, $tt = null, bool $radians = false, bool $errcheck = false, string $direction = "FORWARD"): array
+Transform coordinates (supports both single values and arrays)
+.TP
+.B transformArray(array $coordinates, bool $radians = false, bool $errcheck = false, string $direction = "FORWARD"): array
+Transform array of coordinate tuples
+.TP
+.B transformBounds(float $left, float $bottom, float $right, float $top, int $densify_pts = 21, ...): array
+Transform bounding box with optional densification
+.RE
+
+.B Information Methods:
+.RS
+.TP
+.B getDescription(): ?string
+Get transformation description
+.TP
+.B hasInverse(): bool
+Check if inverse transformation is available
+.TP
+.B getAccuracy(): ?float
+Get transformation accuracy in meters
+.TP
+.B toWkt(string $version = ProjWktVersion::WKT2_2019, bool $pretty = false): string
+Convert to WKT string
+.TP
+.B toProj4(string $version = ProjVersion::PROJ_5): string
+Convert to PROJ4 string
+.RE
+
+.SS ProjGeod
+Geodetic calculations for distance, bearing, and area computations.
+
+.B Constructor:
+.RS
+.TP
+.B __construct(float $a, float $f)
+Create geodetic calculator with explicit semi-major axis and flattening (no defaults)
+.RE
+
+.B Factory Methods (REQUIRED):
+.RS
+.TP
+.B fromCrs(mixed $crs): ProjGeod
+Create from coordinate reference system (CRS object, EPSG code, or CRS string)
+.TP
+.B fromEpsg(int $epsg_code): ProjGeod
+Create from EPSG code (extracts ellipsoid from CRS)
+.TP
+.B fromEllipsoidName(string $ellipsoid_name): ProjGeod
+Create from ellipsoid name using PROJ database
+.TP
+.B fromParameters(float $a, float $param2, string $param_name = "auto"): ProjGeod
+Create from explicit ellipsoid parameters with flexible parameter detection
+.RE
+
+.B Geodetic Operations:
+.RS
+.TP
+.B fwd($points, $az, $dist, bool $radians = false, bool $return_back_azimuth = false): array
+Forward geodetic computation
+.TP
+.B inv($points1, $points2, bool $radians = false, bool $return_back_azimuth = false): array
+Inverse geodetic computation
+.TP
+.B lineLength(array $points, bool $radians = false): float
+Calculate total line length
+.TP
+.B lineLengths(array $points, bool $radians = false): array
+Calculate individual segment lengths
+.TP
+.B npts($point1, $point2, int $npts, bool $radians = false): array
+Generate intermediate points between two locations
+.TP
+.B fwdIntermediate($point1, float $az, array $distances, bool $radians = false, bool $return_back_azimuth = false): array
+Forward computation for multiple distances
+.TP
+.B invIntermediate($point1, $point2, int $npts, bool $radians = false, bool $return_back_azimuth = false): array
+Inverse computation with intermediate points
+.TP
+.B polygonAreaPerimeter(array $points, bool $radians = false): array
+Calculate polygon area and perimeter
+.RE
+
+.B Properties:
+.RS
+.TP
+.B getInitstring(): string
+Get initialization string
+.TP
+.B isSphere(): bool
+Check if using spherical calculations
+.TP
+.B getA(): float
+Get semi-major axis in meters
+.TP
+.B getB(): float
+Get semi-minor axis in meters
+.TP
+.B getF(): float
+Get flattening
+.TP
+.B getEs(): float
+Get eccentricity squared
+.RE
+
+
+.SS ProjTransformerGroup
+Advanced transformation group operations.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjTransformerGroup::fromCrs($crs_from, $crs_to, bool $always_xy = false, ...): self
+Create transformation group with multiple operations
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getTransformers(): array
+Get array of individual ProjTransformer objects
+.TP
+.B downloadGrids(bool $verbose = false): bool
+Download required transformation grids
+.RE
+
+.SH OBJECT MODEL CLASSES
+.SS ProjCoordinateOperation
+Represents coordinate transformation operations with method information.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjCoordinateOperation::fromAuthority(string $auth_name, int $code): self
+Create from authority and code
+.TP
+.B ProjCoordinateOperation::fromEpsg(int $epsg_code): self
+Create from EPSG code
+.TP
+.B ProjCoordinateOperation::fromString(string $operation_string): self
+Create from operation string
+.TP
+.B ProjCoordinateOperation::fromJson(string $json): self
+Create from JSON representation
+.TP
+.B ProjCoordinateOperation::fromUserInput(mixed $input): self
+Create from flexible user input
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): ?string
+Get operation name
+.TP
+.B getMethodName(): ?string
+Get transformation method name
+.TP
+.B getMethodAuthName(): ?string
+Get method authority name
+.TP
+.B getMethodCode(): ?string
+Get method code
+.TP
+.B getAccuracy(): ?float
+Get transformation accuracy in metres
+.TP
+.B isInstantiable(): bool
+Check if operation can be instantiated
+.TP
+.B getRemarks(): ?string
+Get operation remarks
+.TP
+.B getScope(): ?string
+Get operation scope
+.TP
+.B toWkt(string $version = "WKT2_2019", bool $pretty = false): ?string
+Convert to WKT representation
+.TP
+.B toJson(bool $pretty = false): ?string
+Convert to JSON string
+.TP
+.B isExactSame(ProjCoordinateOperation $other): bool
+Compare with another operation
+.RE
+
+.SS ProjDatum
+Represents geodetic reference frames with ellipsoid and prime meridian information.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjDatum::fromAuthority(string $auth_name, int $code): self
+Create from authority and code
+.TP
+.B ProjDatum::fromEpsg(int $epsg_code): self
+Create from EPSG code
+.TP
+.B ProjDatum::fromString(string $datum_string): self
+Create from datum string
+.TP
+.B ProjDatum::fromJson(string $json): self
+Create from JSON representation
+.TP
+.B ProjDatum::fromUserInput(mixed $input): self
+Create from flexible user input
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): ?string
+Get datum name
+.TP
+.B getTypeName(): ?string
+Get datum type ("Geodetic Reference Frame", etc.)
+.TP
+.B getEllipsoid(): ?ProjEllipsoid
+Returns ProjEllipsoid object
+.TP
+.B getPrimeMeridian(): ?ProjPrimeMeridian
+Returns ProjPrimeMeridian object
+.TP
+.B getRemarks(): ?string
+Get datum remarks
+.TP
+.B getScope(): ?string
+Get datum scope
+.TP
+.B toWkt(string $version = "WKT2_2019", bool $pretty = false): ?string
+Convert to WKT representation
+.TP
+.B toJson(bool $pretty = false): ?string
+Convert to JSON string
+.TP
+.B isExactSame(ProjDatum $other): bool
+Compare with another datum
+.RE
+
+.SS ProjEllipsoid
+Represents ellipsoid parameters with comprehensive geometric properties.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjEllipsoid::fromAuthority(string $auth_name, int $code): self
+Create from authority and code
+.TP
+.B ProjEllipsoid::fromEpsg(int $epsg_code): self
+Create from EPSG code
+.TP
+.B ProjEllipsoid::fromString(string $ellipsoid_string): self
+Create from ellipsoid string
+.TP
+.B ProjEllipsoid::fromJson(string $json): self
+Create from JSON representation
+.TP
+.B ProjEllipsoid::fromUserInput(mixed $input): self
+Create from flexible user input
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): ?string
+Get ellipsoid name
+.TP
+.B getSemiMajorMetre(): float
+Get semi-major axis in metres
+.TP
+.B getSemiMinorMetre(): float
+Get semi-minor axis in metres
+.TP
+.B getInverseFlattening(): float
+Get inverse flattening value
+.TP
+.B isSemiMinorComputed(): bool
+Check if semi-minor axis is computed
+.TP
+.B toWkt(string $version = "WKT2_2019", bool $pretty = false): ?string
+Convert to WKT representation
+.TP
+.B toJson(bool $pretty = false): ?string
+Convert to JSON string
+.TP
+.B isExactSame(ProjEllipsoid $other): bool
+Compare with another ellipsoid
+.RE
+
+.SS ProjPrimeMeridian
+Represents prime meridian objects with longitude and unit information.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjPrimeMeridian::fromAuthority(string $auth_name, int $code): self
+Create from authority and code
+.TP
+.B ProjPrimeMeridian::fromEpsg(int $epsg_code): self
+Create from EPSG code
+.TP
+.B ProjPrimeMeridian::fromString(string $pm_string): self
+Create from prime meridian string
+.TP
+.B ProjPrimeMeridian::fromJson(string $json): self
+Create from JSON representation
+.TP
+.B ProjPrimeMeridian::fromUserInput(mixed $input): self
+Create from flexible user input
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): ?string
+Get prime meridian name
+.TP
+.B getLongitude(): float
+Get longitude offset from Greenwich in specified units
+.TP
+.B getUnitName(): ?string
+Get unit name for longitude measurement
+.TP
+.B getUnitConversionFactor(): float
+Get unit conversion factor
+.TP
+.B toWkt(string $version = "WKT2_2019", bool $pretty = false): ?string
+Convert to WKT representation
+.TP
+.B toJson(bool $pretty = false): ?string
+Convert to JSON string
+.TP
+.B isExactSame(ProjPrimeMeridian $other): bool
+Compare with another prime meridian
+.RE
+
+.SS ProjCoordinateSystem
+Represents a coordinate system with comprehensive axis information.
+
+.B Factory Methods:
+.RS
+.TP
+.B ProjCoordinateSystem::fromString(string $cs_string): self
+Create from coordinate system string
+.TP
+.B ProjCoordinateSystem::fromJson(string $json): self
+Create from JSON representation
+.TP
+.B ProjCoordinateSystem::fromUserInput(mixed $input): self
+Create from flexible user input
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): ?string
+Get coordinate system name
+.TP
+.B getAxisList(): array
+Returns array of ProjAxis objects
+.TP
+.B getRemarks(): ?string
+Get coordinate system remarks
+.TP
+.B getScope(): ?string
+Get coordinate system scope
+.TP
+.B toWkt(string $version = "WKT2_2019", bool $pretty = false): ?string
+Convert to WKT representation
+.TP
+.B toJson(bool $pretty = false): ?string
+Convert to JSON string
+.TP
+.B isExactSame(ProjCoordinateSystem $other): bool
+Compare with another coordinate system
+.RE
+
+.SS ProjAxis
+Represents individual coordinate system axes with complete metadata.
+
+.B Constructor:
+.RS
+.TP
+.B new ProjAxis(string $name, string $abbrev, string $direction, string $unit_name, ?string $unit_auth_code, ?string $unit_code, float $unit_conversion_factor)
+Create axis with full properties
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getName(): string
+Get axis name (e.g., "Latitude", "Longitude")
+.TP
+.B getAbbrev(): string
+Get axis abbreviation (e.g., "Lat", "Lon")
+.TP
+.B getDirection(): string
+Get axis direction (e.g., "north", "east")
+.TP
+.B getUnitName(): string
+Get unit name (e.g., "degree")
+.TP
+.B getUnitAuthCode(): ?string
+Get unit authority code (nullable)
+.TP
+.B getUnitCode(): ?string
+Get unit code (nullable)
+.TP
+.B getUnitConversionFactor(): float
+Get conversion factor to SI base unit
+.RE
+
+.SS ProjAreaOfUse
+Represents area of use boundaries with geographic bounds (different from ProjAreaOfInterest).
+
+.B Constructor:
+.RS
+.TP
+.B new ProjAreaOfUse(float $west, float $south, float $east, float $north, ?string $name)
+Create area with geographic bounds and optional name
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getWest(): float
+Get western longitude boundary
+.TP
+.B getSouth(): float
+Get southern latitude boundary
+.TP
+.B getEast(): float
+Get eastern longitude boundary
+.TP
+.B getNorth(): float
+Get northern latitude boundary
+.TP
+.B getName(): ?string
+Get area name (nullable)
+.TP
+.B contains(ProjAreaOfUse $other_area): bool
+Check if this area contains another area
+.TP
+.B intersects(ProjAreaOfUse $other_area): bool
+Check if this area intersects with another area
+.RE
+
+.SH UTILITY CLASSES
+.SS ProjAreaOfInterest
+Geographic area specification for bounding box operations and database filtering.
+
+.B Constructor:
+.RS
+.TP
+.B new ProjAreaOfInterest(float $west, float $south, float $east, float $north)
+Create geographic area specification
+.RE
+
+.B Methods:
+.RS
+.TP
+.B contains(ProjAreaOfInterest $other_aoi): bool
+Check if this area completely contains another area
+.TP
+.B intersects(ProjAreaOfInterest $other_aoi): bool
+Check if this area intersects with another area
+.TP
+.B getWest(), getSouth(), getEast(), getNorth(): float
+Method accessors for coordinates
+.TP
+.B west_lon_degree, south_lat_degree, east_lon_degree, north_lat_degree
+Direct property access for coordinates
+.RE
+
+.SS ProjFactors
+Projection scale and distortion factors at a specific point.
+
+.B Methods:
+.RS
+.TP
+.B getMeridionalScale(), getParallelScale(), getArealScale(): float
+Scale factor accessors
+.TP
+.B getAngularDistortion(), getMeridianConvergence(): float
+Distortion measurements
+.TP
+.B getTissotSemimajor(), getTissotSemiminor(): float
+Tissot indicatrix parameters
+.TP
+.B getDxDlam(), getDxDphi(), getDyDlam(), getDyDphi(): float
+Differential parameters
+.TP
+.B toArray(): array
+Convert to associative array
+.RE
+
+.SS ProjUnit
+Unit information and conversion factors.
+
+.B Constructor:
+.RS
+.TP
+.B new ProjUnit(string $auth_name, string $code, string $name, string $category, float $conv_factor, ?string $proj_short_name, bool $deprecated)
+Create unit information
+.RE
+
+.B Methods:
+.RS
+.TP
+.B getAuthName(), getCode(), getName(), getCategory(): string
+Metadata accessors
+.TP
+.B getProjShortName(): ?string
+Get PROJ short name
+.TP
+.B getConvFactor(): float
+Get conversion factor
+.TP
+.B isDeprecated(): bool
+Check if deprecated
+.TP
+.B toArray(): array
+Convert to associative array
+.RE
+
+.SH GLOBAL FUNCTIONS
+.TP
+.B proj_get_authorities(): array
+Get list of available authorities from PROJ database
+.TP
+.B proj_get_codes(string $auth_name, ?string $pj_type = null, bool $allow_deprecated = false): array
+Get codes for a specific authority and type
+.TP
+.B proj_get_crs_info_list_from_database(?string $auth_name = null, ?string $pj_type = null, ?array $area_of_interest = null, bool $contains = false, bool $allow_deprecated = false): array
+Query CRS definitions from database with optional filtering
+.TP
+.B proj_is_network_enabled(): bool
+Check if network access is enabled for grid downloads
+.TP
+.B proj_set_network_enabled(bool $enabled = true): void
+Enable or disable network access for grid downloads
+.TP
+.B proj_get_user_data_dir(bool $create = false): ?string
+Get the user data directory path
+.TP
+.B proj_set_user_data_dir(?string $path = null): void
+Set the user data directory path
+
+.SH ENUMERATION CLASSES
+.SS ProjWktVersion
+WKT format version constants:
+.B WKT1_GDAL, WKT1_ESRI, WKT2_2015, WKT2_2015_SIMPLIFIED, WKT2_2019, WKT2_2019_SIMPLIFIED
+
+.SS ProjVersion
+PROJ string version constants:
+.B PROJ_4, PROJ_5
+
+.SS ProjTransformDirection
+Transform direction constants:
+.B FORWARD, INVERSE, IDENT
+
+.SS ProjType
+PROJ object type constants including CRS types, operation types, and coordinate system types.
+
+.SH EXCEPTIONS
+.TP
+.B ProjException
+Base exception class for all PROJ-related errors
+.TP
+.B ProjCRSException
+Thrown for CRS creation and manipulation errors
+.TP
+.B ProjTransformerException
+Thrown for coordinate transformation errors
+.TP
+.B ProjGeodException
+Thrown for geodetic calculation errors
+.TP
+.B ProjDataDirException
+Thrown for data directory access errors
+.TP
+.B ProjPipelineException
+Thrown for pipeline parsing errors
+
+.SH EXAMPLES
+.SS Basic CRS Operations
+.nf
+.B <?php
+.B declare(strict_types=1);
+.B 
+.B // Create CRS using various methods
+.B $crs1 = ProjCRS::fromEpsg(4326);
+.B $crs2 = ProjCRS::fromWkt($wkt_string);
+.B $crs3 = ProjCRS::fromProj4('+proj=longlat +datum=WGS84 +no_defs +type=crs');
+.B 
+.B // Get CRS information
+.B echo $crs1->getName();           // "WGS 84"
+.B echo $crs1->getTypeName();       // "Geographic 2D CRS"
+.B print_r($crs1->getAxisInfo());   // Array of axis information
+.B echo $crs1->getToEpsg();         // 4326
+.B ?>
+.fi
+
+.SS Coordinate Transformations
+.nf
+.B <?php
+.B declare(strict_types=1);
+.B 
+.B // Create transformer
+.B $transformer = ProjTransformer::fromCrs('EPSG:4326', 'EPSG:3857');
+.B 
+.B // Transform single point
+.B [$x, $y] = $transformer->transform(-74.0, 40.7);
+.B 
+.B // Transform multiple points
+.B $coordinates = [[-74.0, 40.7], [-73.9, 40.8]];
+.B $result = $transformer->transformArray($coordinates);
+.B 
+.B // Transform bounding box
+.B $bounds = $transformer->transformBounds(-180.0, -85.0, 180.0, 85.0);
+.B ?>
+.fi
+
+.SS Geodetic Calculations
+.nf
+.B <?php
+.B declare(strict_types=1);
+.B 
+.B // Create geodetic calculator using factory methods
+.B $geod = ProjGeod::fromEpsg(4326);                           // WGS84 from EPSG
+.B $geod = ProjGeod::fromCrs("EPSG:4269");                     // NAD83 from CRS string
+.B $geod = ProjGeod::fromParameters(6378137.0, 0.0033528107);  // Auto-detect flattening
+.B 
+.B // Forward geodetic computation (bearing and distance to coordinates)
+.B $result = $geod->fwd([[-74.0, 40.7]], 45.0, 10000.0);
+.B [$lon2, $lat2, $back_azimuth] = $result[0];
+.B 
+.B // Inverse geodetic computation (coordinates to bearing and distance)
+.B $result = $geod->inv([[-74.0, 40.7]], [[-73.9, 40.8]]);
+.B [$forward_az, $back_az, $distance] = $result[0];
+.B 
+.B // Calculate polygon area and perimeter
+.B $points = [[-74.0, 40.7], [-73.9, 40.8], [-73.8, 40.7], [-74.0, 40.7]];
+.B $result = $geod->polygonAreaPerimeter($points);
+.B echo "Area: {$result['area']} sq meters";
+.B ?>
+.fi
+
+.SS Error Handling
+.nf
+.B <?php
+.B declare(strict_types=1);
+.B 
+.B try {
+.B     $crs = ProjCRS::fromEpsg(4326);
+.B     $transformer = ProjTransformer::fromCrs($crs, 'EPSG:3857');
+.B     [$x, $y] = $transformer->transform(-74.0, 40.7);
+.B } catch (ProjCRSException $e) {
+.B     echo "CRS Error: " . $e->getMessage();
+.B } catch (ProjTransformerException $e) {
+.B     echo "Transformer Error: " . $e->getMessage();
+.B } catch (ProjException $e) {
+.B     echo "General PROJ Error: " . $e->getMessage();
+.B }
+.B ?>
+.fi
+
+.SH CONFIGURATION
+.SS PHP Configuration
+Add the following line to your PHP configuration file (php.ini):
+.nf
+.B extension=proj.so
+.fi
+
+.SS Network Access
+Enable network access for downloading transformation grids:
+.nf
+.B <?php
+.B proj_set_network_enabled(true);
+.B ?>
+.fi
+
+.SS Data Directory
+Set custom data directory for PROJ grid files:
+.nf
+.B <?php
+.B proj_set_user_data_dir('/path/to/proj/data');
+.B ?>
+.fi
+
+.SH IMPLEMENTATION NOTES
+.TP
+.B Type Safety
+All methods use PHP 8.1+ type declarations with union types where appropriate
+.TP
+.B Nullable Returns
+Many getter methods return nullable types to handle cases where information is not available
+.TP
+.B Default Parameters
+Most optional parameters have sensible defaults matching PROJ library behavior
+.TP
+.B Array Handling
+Methods accept both single values and arrays for batch operations
+.TP
+.B Direction Handling
+ProjTransformer uses string direction parameter (FORWARD/INVERSE/IDENT), while Proj class uses boolean $inverse parameter for backward compatibility
+.TP
+.B Coordinate Order
+Default behavior respects CRS axis order unless $always_xy is set to true
+.TP
+.B Error Handling
+All operations throw specific exception types for different error conditions
+
+.SH DEPENDENCIES
+.TP
+.B PROJ Library
+>= 6.0.0 (detected via pkg-config)
+.TP
+.B PHP
+8.1+ (uses modern arginfo declarations)
+.TP
+.B Build Tools
+phpize, autotools, pkg-config
+
+.SH FILES
+.TP
+.B /etc/php/*/mods-available/proj.ini
+PHP module configuration file
+.TP
+.B /usr/lib/php/*/proj.so
+PHP extension shared library
+.TP
+.B /usr/share/proj/
+PROJ library data files
+
+.SH ENVIRONMENT
+.TP
+.B PROJ_DATA
+Directory containing PROJ data files
+.TP
+.B PROJ_NETWORK
+Enable/disable network access for grid downloads
+
+.SH SEE ALSO
+.BR proj (1),
+.BR cs2cs (1),
+.BR projinfo (1),
+.BR projsync (1),
+.BR php (1)
+
+.PP
+PROJ documentation: https://proj.org/
+.PP
+PHP documentation: https://www.php.net/
+
+.SH BUGS
+Report bugs to: https://github.com/OSGeo/PROJ/issues
+
+.SH AUTHORS
+PHP-PROJ extension developed for the PROJ project.
+.PP
+This manual page was generated from the PHP interface design documentation.
+
+.SH COPYRIGHT
+Copyright (C) 2024 PROJ contributors. Licensed under the MIT License.

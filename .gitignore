@@ -1,0 +1,69 @@
+# Build artifacts
+*.o
+*.lo
+*.la
+*.so
+*.dep
+.libs/
+.deps/
+modules/
+build/
+include/
+libs/
+
+# Autotools
+Makefile
+Makefile.fragments
+Makefile.objects
+aclocal.m4
+autom4te.cache/
+compile
+config.*
+configure
+configure.ac
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
+config.h.in
+
+# PHP extension
+run-tests.php
+tmp-php.ini
+test_summary.*
+
+# Test artifacts
+tests/*.out
+tests/*.diff
+tests/*.exp
+tests/*.log
+tests/*.sh
+
+# Build logs
+*.log
+build_*.log
+lintian_*.log
+
+# Debian packaging
+debian/*.substvars
+debian/debhelper-build-stamp
+debian/files
+debian/php-proj/
+debian/php-proj-dev/
+debian/autoreconf.*
+
+# Release archives
+*.tar.gz
+*.tar.xz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db

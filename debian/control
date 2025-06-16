@@ -1,0 +1,32 @@
+Source: php-proj
+Section: php
+Priority: optional
+Maintainer: Abraham van der Merwe <abz@frogfoot.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-php,
+               libproj-dev (>= 8.2.1),
+               php-dev
+Standards-Version: 4.6.0
+Homepage: https://github.com/abz/php-proj
+Vcs-Git: https://github.com/abz/php-proj.git
+Vcs-Browser: https://github.com/abz/php-proj
+Rules-Requires-Root: no
+
+Package: php-proj
+Architecture: any
+Section: php
+Depends: ${php:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: PHP bindings for PROJ cartographic projections library
+ This extension provides PHP bindings for the PROJ library, enabling
+ coordinate transformations and cartographic projections within PHP
+ applications.
+ .
+ Features include:
+  * Coordinate transformations between different coordinate reference systems
+  * Support for EPSG codes, WKT, and PROJ strings
+  * Batch coordinate processing for efficient operations
+  * Context management for PROJ library settings
+  * Thread-safe operations for multi-threaded environments
+ .
+ PROJ is a generic coordinate transformation software that transforms
+ geospatial coordinates from one coordinate reference system (CRS) to another.
