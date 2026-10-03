@@ -205,12 +205,12 @@ EPSG codes available: true
 EPSG code count: large
 Contains EPSG:4326: true
 Contains EPSG:3857: true
-Sample codes: 2000, 20004, 20005, 20006, 20007
+Sample codes: 10150, 10151, 10156, 10157, 10158
 
 === Test get projected CRS codes ===
 Projected CRS codes available: true
 Projected CRS count: large
-Sample projected codes: 2000, 20004, 20005
+Sample projected codes: 10150, 10151, 10156
 
 === Test get geographic CRS codes ===
 Geographic CRS codes available: true

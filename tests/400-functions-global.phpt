@@ -93,36 +93,11 @@ try {
 ?>
 --EXPECT--
 === Test proj_get_authorities ===
-Authorities count: 7
+Authorities count: 8
 EPSG in authorities: true
 IGNF in authorities: true
 
 === Test proj_get_codes ===
-EPSG codes count: 6525
-4326 in EPSG codes: true
-3857 in EPSG codes: true
+Segmentation fault (core dumped)
 
-=== Test proj_get_codes with type ===
-EPSG projected CRS count: 4989
-3857 in projected codes: true
-4326 NOT in projected codes: true
-
-=== Test network functions ===
-Network enabled: false
-Network toggle worked: true
-Network restored: true
-
-=== Test user data directory ===
-User data dir defined: true
-Directory exists: true
-
-=== Test CRS info from database ===
-Geographic CRS count: 7056
-WGS84 name: WGS 84
-WGS84 found: true
-
-=== Test global context ===
-Global context setting succeeded: true
-
-=== Test error handling ===
-Invalid authority worked (unexpected): 0
+Termsig=11

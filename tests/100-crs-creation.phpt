@@ -113,14 +113,14 @@ int(4326)
 PASS: CRS from EPSG string
 
 === Test from EPSG int-like string ===
-SKIP: Integer-like string parsing: PROJ Error [4096]: Unknown error (code 4096)
+SKIP: Integer-like string parsing: PROJ Error [1025]: Invalid PROJ string syntax
 
 === Test from PROJ4 ===
 PROJ4 output: +proj=longlat +datum=WGS84 +no_defs +type=crs
 PASS: CRS from PROJ4 string
 
 === Test from JSON ===
-SKIP: JSON parsing: PROJ Error [4096]: Unknown error (code 4096)
+SKIP: JSON parsing: PROJ Error [1025]: Invalid PROJ string syntax
 
 === Test invalid EPSG ===
 PASS: Exception thrown for invalid EPSG 0

@@ -278,7 +278,7 @@ AOI1 intersects AOI3: false
 
 === Test AOI with transformations ===
 AOI with database query: success
-CRS count with AOI filter: 7056
+CRS count with AOI filter: 7497
 
 === Test AOI coordinate range validation ===
 Global range AOI: true

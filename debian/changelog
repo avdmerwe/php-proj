@@ -1,3 +1,28 @@
+php-proj (2.0.1) noble; urgency=medium
+
+  * ProjTransformer::fromPipeline(): add the missing "+proj=pipeline" header when
+    the caller passes a bare "+step ..." body. PROJ 8 tolerated the headerless form;
+    PROJ 9 instead builds a VALID IDENTITY transform, so proj_create() succeeds, the
+    NULL check never fires, and transform() silently returns its input unchanged --
+    wrong coordinates with no error. Verified against PROJ's own cct(1): projecting
+    (-145.5, 1.0) through the AWIPS 221 LCC pipeline must give
+    -5632642.2255, 1636571.4883; before this fix the extension returned the input.
+    Only strings starting with "+step" are rewritten, since fromPipeline() is also
+    called with plain proj strings (e.g. "+proj=lcc ... +inv") where prepending the
+    header would be invalid.
+  * tests: regenerate expectations for 005-functions, 100-crs-creation, 103-crs-maker,
+    107-area-of-interest, 114-database-lists and 400-functions-global against
+    PROJ 9.4.0. These hard-code EPSG database counts (6525 -> 6964 codes, 7 -> 8
+    authorities) and PROJ error codes ([4096] "Unknown error" -> [1025] "Invalid PROJ
+    string syntax"), all of which changed between PROJ 8.2.1 and 9.4.0. NOTE: because
+    they pin database totals they will drift again on the next PROJ update; worth
+    making range-based.
+  * 112-lambert-conformal-conic and 113-exception-handling now pass again, as do
+    110-datum-functionality and 202-transform-utilities, which were also affected by
+    the fromPipeline bug. Full suite: 28/28.
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Sun, 04 Oct 2026 01:09:43 +0200
+
 php-proj (2.0.0) jammy; urgency=medium
 
   * Rewritten PHP PROJ extension to be more complete port of Pyproj

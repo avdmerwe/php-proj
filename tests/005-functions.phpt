@@ -150,6 +150,6 @@ Testing error handling with invalid authority
 Invalid authority returned 0 codes
 
 Testing error handling with invalid type
-Invalid type returned 6525 codes
+Invalid type returned 6964 codes
 
 All tests completed

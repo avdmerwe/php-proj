@@ -188,7 +188,7 @@ EPSG code - Name: WGS 84
 EPSG code - EPSG: 4326
 EPSG string - Name: WGS 84
 EPSG string - EPSG: 4326
-User input - Failed: PROJ Error [4096]: Unknown error (code 4096)
+User input - Failed: PROJ Error [1025]: Invalid PROJ string syntax
 
 === Test CRS equivalence ===
 Same CRS equals: true

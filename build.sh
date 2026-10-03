@@ -4,7 +4,7 @@
 set -e
 
 PACKAGE_NAME="php-proj"
-VERSION="2.0.0"
+VERSION="2.0.1"
 
 show_help() {
     echo "PHP PROJ Extension Build Script"

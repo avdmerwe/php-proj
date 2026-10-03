@@ -330,8 +330,29 @@ static PHP_METHOD(ProjTransformer, fromPipeline)
     ZEND_PARSE_PARAMETERS_END();
 
     ctx = proj_get_default_context();
-    pj = proj_create(ctx, pipeline);
-    
+
+    /* A pipeline definition must be headed by "+proj=pipeline". PROJ 8 tolerated
+     * a bare "+step ..." body; PROJ 9 instead builds a VALID IDENTITY transform,
+     * so proj_create() succeeds and transform() silently returns its input
+     * unchanged. Add the missing header rather than return wrong coordinates.
+     * Only strings starting with "+step" are rewritten: fromPipeline() is also
+     * called with plain proj strings (e.g. "+proj=lcc ... +inv"), for which
+     * prepending the header would be invalid. */
+    {
+        const char *p = pipeline;
+        while (*p == ' ' || *p == '\t') {
+            p++;
+        }
+        if (strncmp(p, "+step", 5) == 0) {
+            char *headed;
+            spprintf(&headed, 0, "+proj=pipeline %s", p);
+            pj = proj_create(ctx, headed);
+            efree(headed);
+        } else {
+            pj = proj_create(ctx, pipeline);
+        }
+    }
+
     if (!pj) {
         proj_throw_proj_error(ctx);
         return;
