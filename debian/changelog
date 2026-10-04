@@ -1,3 +1,34 @@
+php-proj (2.0.3) noble; urgency=medium
+
+  * Release-tooling only; no functional change to the extension. 2.0.2 and 2.0.3
+    produce identical behaviour.
+  * Carries the build.sh do_release fix that landed one commit after the v2.0.2
+    tag, so the tag now contains the script that produces its own release
+    tarball. do_release copied *.c and *.m4 but not *.h, and every file under
+    src/ does #include "../php_proj.h", so the published tarball configured
+    cleanly and then failed at compile with
+    '../php_proj.h: No such file or directory'. Both the v2.0.1 and v2.0.2
+    source tarballs shipped in that state.
+  * The generated config.h is no longer shipped in the tarball; it would
+    override whatever the consumer's own ./configure produces.
+  * Verified by extracting the generated php-proj-2.0.3.tar.gz into a clean
+    directory: phpize, ./configure and make all succeed and the suite passes
+    28/28.
+  * PHP_PROJ_VERSION bumped to 2.0.3.
+  * build.sh do_release also prunes what do_build and do_test create. do_release
+    runs do_clean BEFORE building and testing, so the archive was picking up
+    fresh src/*.o, src/*.lo, src/*.dep, tests/*.{out,diff,exp,log,sh,php} and
+    debian/ debhelper leftovers -- 2.68 MB of tarball where 118 kB is the actual
+    source. Shipping src/*.dep was the worst of it: phpize records absolute PHP
+    include paths in those files and the Makefile -include's them, so a consumer
+    on a different phpapi would hit "No rule to make target .../main/php.h",
+    the same trap debian/clean exists to prevent.
+    The regenerated tarball was verified end to end in a clean directory:
+    phpize, ./configure, make, 28/28 tests, and dpkg-buildpackage all succeed
+    from the tarball alone.
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Sun, 04 Oct 2026 13:21:27 +0200
+
 php-proj (2.0.2) noble; urgency=high
 
   * proj_get_codes(): initialise the optional pj_type pointer and its length.

@@ -15,7 +15,7 @@
 #include <proj.h>
 #include <geodesic.h>
 
-#define PHP_PROJ_VERSION "2.0.2"
+#define PHP_PROJ_VERSION "2.0.3"
 #define PHP_PROJ_EXTNAME "proj"
 
 /* Module entry */
