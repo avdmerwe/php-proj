@@ -100,7 +100,18 @@ try {
             // Coordinates should be different due to datum shift
             $x_diff = abs($wgs84_utm_result[0] - $nad27_utm_result[0]);
             $y_diff = abs($wgs84_utm_result[1] - $nad27_utm_result[1]);
-            echo "Datum shift detected: " . (($x_diff > 1.0 || $y_diff > 1.0) ? "true" : "false") . " (X diff: " . number_format($x_diff, 2) . ", Y diff: " . number_format($y_diff, 2) . ")\n";
+            // The exact magnitude depends on which NAD27 <-> WGS84 operation PROJ
+            // late-binds for this point, and that depends on whether the optional
+            // NADCON grids are installed in the PROJ user directory
+            // ($HOME/.local/share/proj). Measured both ways on PROJ 9.4.0:
+            // with the grids  X 88.30  Y 198.46
+            // without them    X 90.86  Y 194.24   (ballpark geographic offset)
+            // dpkg-buildpackage builds with a sanitised HOME, so the grids are not
+            // visible there. Assert the shift is real and of the right order instead
+            // of pinning metre values that only hold where the grids are downloaded.
+            echo "Datum shift detected: " . (($x_diff > 1.0 || $y_diff > 1.0) ? "true" : "false") . "\n";
+            echo "X shift in 50-150 m band: " . (($x_diff > 50.0 && $x_diff < 150.0) ? "true" : "false") . "\n";
+            echo "Y shift in 150-250 m band: " . (($y_diff > 150.0 && $y_diff < 250.0) ? "true" : "false") . "\n";
         }
     }
     
@@ -186,7 +197,9 @@ NAD27 UTM CRS created: true
 WGS84 UTM CRS created: true
 NAD27 geo to UTM successful: true
 NAD27 to WGS84 datum shift successful: true
-Datum shift detected: true (X diff: 88.30, Y diff: 198.46)
+Datum shift detected: true
+X shift in 50-150 m band: true
+Y shift in 150-250 m band: true
 
 === Test CRS datum information ===
 CRS EPSG:4326: WGS 84

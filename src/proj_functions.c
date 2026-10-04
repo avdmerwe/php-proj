@@ -121,10 +121,10 @@ static PHP_FUNCTION(proj_get_authorities)
 /* Get codes for an authority */
 static PHP_FUNCTION(proj_get_codes)
 {
-    char *auth_name;
-    size_t auth_name_len;
-    char *pj_type;
-    size_t pj_type_len;
+    char *auth_name = NULL;
+    size_t auth_name_len = 0;
+    char *pj_type = NULL;
+    size_t pj_type_len = 0;
     zend_bool allow_deprecated = 0;
     
     PJ_CONTEXT *ctx;

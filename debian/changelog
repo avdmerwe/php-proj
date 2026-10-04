@@ -1,3 +1,53 @@
+php-proj (2.0.2) noble; urgency=high
+
+  * proj_get_codes(): initialise the optional pj_type pointer and its length.
+    pj_type is bound after Z_PARAM_OPTIONAL, so when the caller omits it --
+    proj_get_codes('EPSG') with a single argument -- the parameter parser never
+    writes to it and the variable holds whatever was on the stack. The
+    "if (pj_type == NULL)" guard then tests stack garbage, falls through to
+    strcmp(), and dereferences a wild pointer: SIGSEGV. Confirmed by backtrace
+    (__strcmp_avx2 <- zif_proj_get_codes at src/proj_functions.c:145). The
+    2.0.0 binary survived only by luck of stack layout; a rebuild of the same
+    source crashes reliably. proj_get_crs_info_list_from_database() in the same
+    file already used the "= NULL / = 0" form, so this was a single missed site;
+    a sweep of php-proj, php-geotiff and php-sfcgal found no others.
+  * tests/400-functions-global: restore a real expected output. The 2.0.1 tree
+    asserted "Segmentation fault (core dumped)" / "Termsig=11" as the EXPECTED
+    result, which made the suite report 28/28 while hiding the crash above.
+    Compared against the pre-2.0.1 expectation, only four lines are genuine
+    PROJ 8.2.1 -> 9.4.0 database drift (authorities 7 -> 8, EPSG codes
+    6525 -> 6964, projected CRS 4989 -> 5263, geographic CRS 7056 -> 7497);
+    every boolean assertion is unchanged, including the semantic check that
+    4326 is absent from projected_crs while 3857 is present.
+  * Test suite is now 28/28 with no failure encoded as an expectation.
+  * tests/110-datum-functionality, tests/202-transform-utilities: stop asserting
+    metre-exact NAD27 coordinates. PROJ late-binds the NAD27 <-> NAD83 operation
+    per point, so the result depends on whether the optional NADCON grids are
+    present in the PROJ user directory ($HOME/.local/share/proj). Measured on
+    PROJ 9.4.0, Jefferson City NAD83 -> NAD27 gives 569722.342, 4268814.028 with
+    the grids and 569720.460, 4268813.880 without (ballpark geographic offset).
+    dpkg-buildpackage builds with a sanitised HOME, so these tests failed in the
+    package build while passing interactively -- which is why 2.0.0 shipped with
+    DEB_BUILD_OPTIONS=nocheck. They now assert the shift is real and within a
+    tolerance that covers both operations, verified green 10/10 runs with the
+    grids and 10/10 with HOME sanitised.
+  * tests/104-crs-json, tests/202-transform-utilities: stop printing raw
+    wall-clock durations, which were pinned in --EXPECT-- as "0.0008 seconds" and
+    "0.0001 seconds". A timing measurement cannot be an expectation; 104 failed
+    roughly 60% of runs on this machine. The threshold assertions (< 0.1 s) are
+    kept, which is what the tests were actually checking.
+  * The package build now runs its test gate. No DEB_BUILD_OPTIONS=nocheck is
+    needed and none is used.
+  * php_proj.h: bump PHP_PROJ_VERSION to 2.0.2. It is reported by
+    phpversion('proj') and phpinfo(), and had been left at the previous value.
+  * .gitignore / debian/clean: also cover tests/*.php. run-tests.php writes a
+    .php next to each .phpt it runs, and the existing globs all required an
+    underscore (tests/*_*.php), which never matched names like
+    tests/001-crs-basic.php -- so those artifacts were neither ignored nor
+    cleaned.
+
+ -- Abraham van der Merwe <abz@frogfoot.com>  Sun, 04 Oct 2026 11:53:38 +0200
+
 php-proj (2.0.1) noble; urgency=medium
 
   * ProjTransformer::fromPipeline(): add the missing "+proj=pipeline" header when

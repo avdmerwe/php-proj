@@ -6,4 +6,5 @@ tests/*_*.exp
 tests/*_*.log
 tests/*_*.out
 tests/*_*.php
+tests/*.php
 tests/*_*.sh

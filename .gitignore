@@ -40,6 +40,7 @@ tests/*.diff
 tests/*.exp
 tests/*.log
 tests/*.sh
+tests/*.php
 
 # Build logs
 *.log
@@ -53,6 +54,8 @@ debian/files
 debian/php-proj/
 debian/php-proj-dev/
 debian/autoreconf.*
+debian/.debhelper/
+debian/*.debhelper
 
 # Release archives
 *.tar.gz

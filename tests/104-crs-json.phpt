@@ -196,8 +196,11 @@ try {
     }
     
     $elapsed = microtime(true) - $start_time;
+    // Assert the threshold only. The raw duration was previously printed and
+    // pinned in --EXPECT-- as "0.0008 seconds", which made this test fail
+    // whenever the machine was a fraction of a millisecond slower -- roughly
+    // 60% of runs here. A wall-clock measurement cannot be an expectation.
     echo "JSON performance good: " . ($elapsed < 0.1 ? "true" : "false") . "\n";
-    echo sprintf("10 operations in: %.4f seconds\n", $elapsed);
     
 } catch (Exception $e) {
     echo "JSON performance test failed: " . $e->getMessage() . "\n";
@@ -259,4 +262,3 @@ Geocentric round-trip: true
 
 === Test JSON performance ===
 JSON performance good: true
-10 operations in: 0.0008 seconds

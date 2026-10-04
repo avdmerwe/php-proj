@@ -34,7 +34,17 @@ try {
     // Transform to NAD27
     $result = $transformer->transform(569704.566, 4269024.671);
     echo "NAD83 to NAD27 successful: " . (is_array($result) && count($result) >= 2 ? "true" : "false") . "\n";
-    echo sprintf("NAD27 coordinates: [%.0f, %.0f]\n", $result[0], $result[1]);
+    // PROJ late-binds the NAD83 -> NAD27 operation per point, so the result
+    // depends on whether the optional NADCON grids are present in the PROJ user
+    // directory ($HOME/.local/share/proj). Measured both ways on PROJ 9.4.0:
+    // with the grids  569722.342, 4268814.028  (NADCON, 0.15 m class)
+    // without them    569720.460, 4268813.880  (ballpark geographic offset)
+    // dpkg-buildpackage builds with a sanitised HOME, so the grids are not
+    // visible there. Assert agreement with the grid-based reference to within
+    // 5 m, which covers both paths and still catches a real break.
+    $ref = [569722.342, 4268814.028];
+    echo "NAD27 coordinates within 5 m of reference: "
+        . ((abs($result[0] - $ref[0]) < 5.0 && abs($result[1] - $ref[1]) < 5.0) ? "true" : "false") . "\n";
     
 } catch (Exception $e) {
     echo "UTM transformation failed: " . $e->getMessage() . "\n";
@@ -60,7 +70,12 @@ try {
                                    is_array($results[2]) && count($results[2]) >= 2 ? "true" : "false") . "\n";
     
     // Verify first result
-    echo sprintf("Columbia NAD27: [%.0f, %.0f]\n", $results[0][0], $results[0][1]);
+    // Same grid dependence as the NAD83 -> NAD27 case above. Measured both ways:
+    // with the grids  567721.149, 4297989.112
+    // without them    567719.249, 4297989.776
+    $columbia_ref = [567721.149, 4297989.112];
+    echo "Columbia NAD27 within 5 m of reference: "
+        . ((abs($results[0][0] - $columbia_ref[0]) < 5.0 && abs($results[0][1] - $columbia_ref[1]) < 5.0) ? "true" : "false") . "\n";
     
 } catch (Exception $e) {
     echo "Batch transformation failed: " . $e->getMessage() . "\n";
@@ -111,8 +126,11 @@ try {
     
     echo "Large array count: " . count($coordinates) . "\n";
     echo "Transform results: " . count($results) . "\n";
+    // Assert the threshold only -- a wall-clock measurement cannot be a stable
+    // expectation. The raw duration was pinned as "0.0001 seconds", which held
+    // only because this loop is fast; it is the same latent failure that made
+    // 104-crs-json flaky.
     echo "Performance good: " . ($elapsed < 0.1 ? "true" : "false") . "\n";
-    echo sprintf("Elapsed time: %.4f seconds\n", $elapsed);
     
 } catch (Exception $e) {
     echo "Large array test failed: " . $e->getMessage() . "\n";
@@ -215,12 +233,12 @@ Transform result: [-16196985.910, 111325.143]
 === Test UTM NAD83 to NAD27 ===
 Jefferson City lat/lon: [38.56694, -92.19988]
 NAD83 to NAD27 successful: true
-NAD27 coordinates: [569722, 4268814]
+NAD27 coordinates within 5 m of reference: true
 
 === Test batch coordinate processing ===
 Batch transform count: 3
 All results valid: true
-Columbia NAD27: [567721, 4297989]
+Columbia NAD27 within 5 m of reference: true
 
 === Test round-trip accuracy ===
 Round-trip lat accuracy: good
@@ -232,7 +250,6 @@ Lon error: 0.00000000
 Large array count: 441
 Transform results: 441
 Performance good: true
-Elapsed time: 0.0001 seconds
 
 === Test bounds transformation ===
 Bounds transformation successful: true
